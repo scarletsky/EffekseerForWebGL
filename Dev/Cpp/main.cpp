@@ -2,6 +2,9 @@
 #include <math.h>
 #include <algorithm>
 #include <emscripten.h>
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
+
 #include <AL/alc.h>
 #include "Effekseer.h"
 #include "EffekseerRendererGL.h"
@@ -57,6 +60,31 @@ namespace EfkWebViewer
 
 		Effekseer::TextureData* Load(const void* data, int32_t size, TextureType textureType) override
 		{
+			emscripten::val val_ = emscripten::val(emscripten::typed_memory_view(data, size));
+
+			GLuint texture = 0;
+			glGenTextures(1, &texture);
+
+			EM_ASM_INT({
+				var buf = $0.buffer;
+				var blob = new Blob([buf], {type: "application/octet-binary"});
+				var objectUrl = URL.createObjectURL(blob);
+				const img = new Image();
+				img.src = objectUrl;
+				GLctx.bindTexture(GLctx.TEXTURE_2D, GL.textures[$1]);
+				GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, img);
+				if (Module._isPowerOfTwo(img)) {
+					GLctx.generateMipmap(GLctx.TEXTURE_2D);
+				}
+				GLctx.bindTexture(GLctx.TEXTURE_2D, null);
+
+			}, val_, texture);
+
+			Effekseer::TextureData* textureData = new Effekseer::TextureData();
+			textureData->UserID = texture;
+			return textureData;
+
+			/*
 			int width;
 			int height;
 			int channel;
@@ -90,6 +118,7 @@ namespace EfkWebViewer
 			textureData->Width = width;
 			textureData->Height = height;
 			return textureData;
+			*/
 		}
 
 		void Unload(Effekseer::TextureData* data ) override
