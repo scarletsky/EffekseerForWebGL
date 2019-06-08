@@ -60,29 +60,31 @@ namespace EfkWebViewer
 
 		Effekseer::TextureData* Load(const void* data, int32_t size, TextureType textureType) override
 		{
-			emscripten::val val_ = emscripten::val(emscripten::typed_memory_view(data, size));
-
+			
 			GLuint texture = 0;
 			glGenTextures(1, &texture);
 
 			EM_ASM_INT({
-				var buf = $0.buffer;
-				var blob = new Blob([buf], {type: "application/octet-binary"});
+				var buf = new Uint8Array(Module.HEAPU8.buffer, $0, $1);
+				console.log("size = " + String(buf.length));
+				var blob = new Blob([buf.buffer], {type: "application/octet-binary"});
 				var objectUrl = URL.createObjectURL(blob);
+				console.log(objectUrl);
 				const img = new Image();
 				img.src = objectUrl;
-				GLctx.bindTexture(GLctx.TEXTURE_2D, GL.textures[$1]);
+				GLctx.bindTexture(GLctx.TEXTURE_2D, GL.textures[$2]);
 				GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, img);
 				if (Module._isPowerOfTwo(img)) {
 					GLctx.generateMipmap(GLctx.TEXTURE_2D);
 				}
 				GLctx.bindTexture(GLctx.TEXTURE_2D, null);
 
-			}, val_, texture);
+			}, data, size, texture);
 
 			Effekseer::TextureData* textureData = new Effekseer::TextureData();
 			textureData->UserID = texture;
 			return textureData;
+			
 
 			/*
 			int width;
