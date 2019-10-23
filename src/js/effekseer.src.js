@@ -1,24 +1,11 @@
 
 const effekseer = (() => {
-  const Module = effekseer_native();
+  let Module = {};
   let Core = {};
+  let _onloadAssembly = () => { }
+  let _onerrorAssembly = () => { }
 
-  const _initalize_wasm = (url) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = () => {
-      Module.wasmBinary = xhr.response;
-    };
-    xhr.onerror = () => {
-
-    };
-    xhr.send(null);
-  };
-
-  _initalize_wasm('../effekseer_native.wasm');
-
-  Module.onRuntimeInitialized = () => {
+  let _onRuntimeInitialized = () => {
     // C++ functions
     Core = {
       Init: Module.cwrap("EffekseerInit", "number", ["number", "number"]),
@@ -58,6 +45,70 @@ const effekseer = (() => {
       EffectGetColorImageCount: Module.cwrap("EffekseerEffectGetColorImageCount", "number", ["number"]),
       EffectGetColorImagePath: Module.cwrap("EffekseerEffectGetColorImagePath", "number", ["number", "number"]),
     };
+
+
+    Module._isPowerOfTwo = img => {
+      return _isImagePowerOfTwo(img);
+    };
+
+    Module._loadImage = path => {
+      const effect = loadingEffect;
+      effect.context._makeContextCurrent();
+
+      var res = effect.resources.find(res => { return res.path == path });
+      if (res) {
+        return (res.isLoaded) ? res.image : null;
+      }
+
+      var res = { path: path, isLoaded: false, image: null };
+      effect.resources.push(res);
+
+      _loadResource(effect.baseDir + path, image => {
+        res.image = image
+        res.isLoaded = true;
+        effect._update();
+      }, effect.onerror);
+      return null;
+    };
+
+    Module._loadBinary = path => {
+      const effect = loadingEffect;
+      effect.context._makeContextCurrent();
+
+      var res = effect.resources.find(res => { return res.path == path });
+      if (res) {
+        return (res.isLoaded) ? res.buffer : null;
+      }
+
+      var res = { path: path, isLoaded: false, buffer: null };
+      effect.resources.push(res);
+
+      _loadResource(effect.baseDir + path, buffer => {
+        res.buffer = buffer;
+        res.isLoaded = true;
+        effect._update();
+      }, effect.onerror);
+      return null;
+    };
+
+
+    _onloadAssembly();
+  };
+
+  const _initalize_wasm = (url) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = "arraybuffer";
+    xhr.onload = () => {
+      var params = {};
+      params.wasmBinary = xhr.response;
+      params.onRuntimeInitialized = _onRuntimeInitialized;
+      Module = effekseer_native(params);
+    };
+    xhr.onerror = () => {
+      _onerrorAssembly();
+    };
+    xhr.send(null);
   };
 
   /**
@@ -313,50 +364,6 @@ const effekseer = (() => {
   };
 
   var loadingEffect = null;
-
-  Module._isPowerOfTwo = img => {
-    return _isImagePowerOfTwo(img);
-  };
-
-  Module._loadImage = path => {
-    const effect = loadingEffect;
-    effect.context._makeContextCurrent();
-
-    var res = effect.resources.find(res => { return res.path == path });
-    if (res) {
-      return (res.isLoaded) ? res.image : null;
-    }
-
-    var res = { path: path, isLoaded: false, image: null };
-    effect.resources.push(res);
-
-    _loadResource(effect.baseDir + path, image => {
-      res.image = image
-      res.isLoaded = true;
-      effect._update();
-    }, effect.onerror);
-    return null;
-  };
-
-  Module._loadBinary = path => {
-    const effect = loadingEffect;
-    effect.context._makeContextCurrent();
-
-    var res = effect.resources.find(res => { return res.path == path });
-    if (res) {
-      return (res.isLoaded) ? res.buffer : null;
-    }
-
-    var res = { path: path, isLoaded: false, buffer: null };
-    effect.resources.push(res);
-
-    _loadResource(effect.baseDir + path, buffer => {
-      res.buffer = buffer;
-      res.isLoaded = true;
-      effect._update();
-    }, effect.onerror);
-    return null;
-  };
 
   class ContextStates {
     constructor(gl) {
@@ -721,6 +728,12 @@ const effekseer = (() => {
    * @class
    */
   class Effekseer {
+
+    loadAssembly(path, onload, onerror) {
+      _onloadAssembly = onload;
+      _onerrorAssembly = onerror;
+      _initalize_wasm(path);
+    }
 
     /**
      * Create a context to render in multiple scenes
