@@ -111,7 +111,7 @@ const effekseer = (() => {
     xhr.send(null);
   };
 
-  if(effekseer_native === undefined)
+  if(typeof effekseer_native === "undefined")
   {
     Module = effekseer();
     _onRuntimeInitialized();
@@ -736,8 +736,9 @@ const effekseer = (() => {
   class Effekseer {
 
     initRuntime(path, onload, onerror) {
-      if(effekseer_native === undefined)
+      if(typeof effekseer_native === "undefined")
       {
+        onload();
         return;
       }
 
