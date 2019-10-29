@@ -111,7 +111,7 @@ const effekseer = (() => {
     xhr.send(null);
   };
 
-  if(!is_wasm)
+  if(effekseer_native === undefined)
   {
     Module = effekseer();
     _onRuntimeInitialized();
@@ -736,7 +736,7 @@ const effekseer = (() => {
   class Effekseer {
 
     initRuntime(path, onload, onerror) {
-      if(!is_wasm)
+      if(effekseer_native === undefined)
       {
         return;
       }

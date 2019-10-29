@@ -27,7 +27,7 @@ if(AS_WASM)
       " -s TOTAL_MEMORY=33554432"
       " -s EXPORT_NAME=\"'effekseer_native'\""
       " -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap', 'UTF8ToString']\" "
-      " --post-js ${PROJECT_SOURCE_DIR}/js/post_wasm.js"
+      " --post-js ${PROJECT_SOURCE_DIR}/js/post.js"
     )
 
 else()
@@ -41,7 +41,7 @@ else()
       " -s TOTAL_MEMORY=33554432"
       " -s EXPORT_NAME=\"'effekseer'\""
       " -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap', 'UTF8ToString']\" "
-      " --post-js ${PROJECT_SOURCE_DIR}/js/post_em.js"
+      " --post-js ${PROJECT_SOURCE_DIR}/js/post.js"
     )
 
 endif()
