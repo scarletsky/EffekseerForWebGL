@@ -4,7 +4,7 @@ const effekseer = (() => {
   let Core = {};
   let _onloadAssembly = () => { }
   let _onerrorAssembly = () => { }
-
+  let _is_runtime_initialized = false;
   let _onRuntimeInitialized = () => {
     // C++ functions
     Core = {
@@ -91,7 +91,7 @@ const effekseer = (() => {
       return null;
     };
 
-
+    _is_runtime_initialized = true;
     _onloadAssembly();
   };
 
@@ -110,6 +110,12 @@ const effekseer = (() => {
     };
     xhr.send(null);
   };
+
+  if(!is_wasm)
+  {
+    Module = effekseer();
+    _onRuntimeInitialized();
+  }
 
   /**
    * A loaded effect data
@@ -729,7 +735,12 @@ const effekseer = (() => {
    */
   class Effekseer {
 
-    loadAssembly(path, onload, onerror) {
+    initRuntime(path, onload, onerror) {
+      if(!is_wasm)
+      {
+        return;
+      }
+
       _onloadAssembly = onload;
       _onerrorAssembly = onerror;
       _initalize_wasm(path);
@@ -740,6 +751,11 @@ const effekseer = (() => {
      * @returns {EffekseerContext} context
      */
     createContext() {
+      if(!_is_runtime_initialized)
+      {
+        return null;
+      }
+
       return new EffekseerContext();
     }
 
@@ -761,6 +777,7 @@ const effekseer = (() => {
      * @param {object} settings Some settings with Effekseer initialization
      */
     init(webglContext, settings) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext = new EffekseerContext();
       this.defaultContext.init(webglContext, settings);
     }
@@ -770,18 +787,22 @@ const effekseer = (() => {
      * @param {number=} deltaFrames number of advance frames
      */
     update(deltaFrames) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.update(deltaFrames);
     }
 
     beginUpdate() {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.beginUpdate();
     }
 
     endUpdate() {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.endUpdate();
     }
 
     updateHandle(handle, deltaFrames) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.updateHandle(handle, deltaFrames);
     }
 
@@ -789,18 +810,22 @@ const effekseer = (() => {
      * Main rendering.
      */
     draw() {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.draw();
     }
 
     beginDraw() {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.beginDraw();
     }
 
     endDraw() {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.endDraw();
     }
 
     drawHandle(handle) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.drawHandle(handle);
     }
 
@@ -809,6 +834,7 @@ const effekseer = (() => {
      * @param {array} matrixArray An array that is requred 16 elements
      */
     setProjectionMatrix(matrixArray) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.setProjectionMatrix(matrixArray);
     }
 
@@ -820,6 +846,7 @@ const effekseer = (() => {
      * @param {number} aspect Distance of far plane
      */
     setProjectionPerspective(fov, aspect, near, far) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.SetProjectionPerspective(fov, aspect, near, far);
     }
 
@@ -831,6 +858,7 @@ const effekseer = (() => {
      * @param {number} aspect Distance of far plane
      */
     setProjectionOrthographic(width, height, near, far) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.setProjectionOrthographic(width, height, near, far);
     }
 
@@ -839,6 +867,7 @@ const effekseer = (() => {
      * @param {array} matrixArray An array that is requred 16 elements
      */
     setCameraMatrix(matrixArray) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.setCameraMatrix(matrixArray);
     }
 
@@ -865,6 +894,7 @@ const effekseer = (() => {
       upvecY,
       upvecZ
     ) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.setCameraLookAt(positionX, positionY, positionZ, targetX, targetY, targetZ, upvecX, upvecY, upvecZ);
     }
 
@@ -875,6 +905,7 @@ const effekseer = (() => {
      * @param {object=} upvec upper vector
      */
     setCameraLookAtFromVector(position, target, upvec) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.setCameraLookAtFromVector(position, target, upvec);
     }
 
@@ -887,6 +918,7 @@ const effekseer = (() => {
      * @returns {EffekseerEffect} The effect data
      */
     loadEffect(path, scale = 1.0, onload, onerror) {
+      console.warn('deprecated : please use through createContext.');
       return this.defaultContext.loadEffect(path, scale, onload, onerror);
     }
 
@@ -895,6 +927,7 @@ const effekseer = (() => {
      * @param {EffekseerEffect} effect The loaded effect
      */
     releaseEffect(effect) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.releaseEffect(effect);
     }
 
@@ -907,6 +940,7 @@ const effekseer = (() => {
      * @returns {EffekseerHandle} The effect handle
      */
     play(effect, x, y, z) {
+      console.warn('deprecated : please use through createContext.');
       return this.defaultContext.play(effect, x, y, z);
     }
 
@@ -914,6 +948,7 @@ const effekseer = (() => {
      * Stop the all effects.
      */
     stopAll() {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.stopAll();
     }
 
@@ -922,6 +957,7 @@ const effekseer = (() => {
      * @param {function} loader
      */
     setResourceLoader(loader) {
+      console.warn('deprecated : please use through createContext.');
       this.defaultContext.setResourceLoader(loader);
     }
 
@@ -929,6 +965,7 @@ const effekseer = (() => {
      * Get whether VAO is supported
      */
     isVertexArrayObjectSupported() {
+      console.warn('deprecated : please use through createContext.');
       return this.defaultContext.isVertexArrayObjectSupported();
     }
   }

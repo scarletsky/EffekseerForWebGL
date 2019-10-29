@@ -1,6 +1,8 @@
 
 project(effekseer)
 
+option(AS_WASM "compile as wasm" OFF)
+
 # CMake version check
 cmake_minimum_required(VERSION 3.4)
 
@@ -13,17 +15,36 @@ string(APPEND CMAKE_CXX_FLAGS
 )
 
 # Set linker flags
-string(APPEND CMAKE_EXE_LINKER_FLAGS
-  " -s WASM=1"
-  " -s MODULARIZE=1"
-  " -s NO_FILESYSTEM=1"
-  " -s DISABLE_EXCEPTION_CATCHING=1"
-  " -s NO_EXIT_RUNTIME=1"
-  " -s TOTAL_MEMORY=33554432"
-  " -s EXPORT_NAME=\"'effekseer_native'\""
-  " -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap', 'UTF8ToString']\" "
-  " --post-js ${PROJECT_SOURCE_DIR}/js/post.js"
-)
+
+if(AS_WASM)
+
+    string(APPEND CMAKE_EXE_LINKER_FLAGS
+      " -s WASM=1"
+      " -s MODULARIZE=1"
+      " -s NO_FILESYSTEM=1"
+      " -s DISABLE_EXCEPTION_CATCHING=1"
+      " -s NO_EXIT_RUNTIME=1"
+      " -s TOTAL_MEMORY=33554432"
+      " -s EXPORT_NAME=\"'effekseer_native'\""
+      " -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap', 'UTF8ToString']\" "
+      " --post-js ${PROJECT_SOURCE_DIR}/js/post_wasm.js"
+    )
+
+else()
+
+    string(APPEND CMAKE_EXE_LINKER_FLAGS
+      " -s WASM=0"
+      " -s MODULARIZE=1"
+      " -s NO_FILESYSTEM=1"
+      " -s DISABLE_EXCEPTION_CATCHING=1"
+      " -s NO_EXIT_RUNTIME=1"
+      " -s TOTAL_MEMORY=33554432"
+      " -s EXPORT_NAME=\"'effekseer'\""
+      " -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['cwrap', 'UTF8ToString']\" "
+      " --post-js ${PROJECT_SOURCE_DIR}/js/post_em.js"
+    )
+
+endif()
 
 # Assume Effekseer directory
 set(EFFEKSEER_DIR "${PROJECT_SOURCE_DIR}/../../Effekseer")
@@ -65,4 +86,4 @@ list(REMOVE_ITEM effekseer_src
 set(CMAKE_EXECUTABLE_SUFFIX ".js")
 
 # Add build settings
-add_executable(effekseer_native ${effekseer_src})
+add_executable(effekseer.core ${effekseer_src})
