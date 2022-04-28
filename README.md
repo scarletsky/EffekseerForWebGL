@@ -141,3 +141,13 @@ emsdk activate latest
 pip install dukpy jsmin
 python build.py
 ```
+
+**NOTE**: Please run `pip show pip` to check where are the packages located.
+
+```
+Name: pip
+Version: 22.0.4
+Location: /usr/local/lib/python3.9/site-packages
+```
+
+If the packages are in `python3.x` folder, you should run `python3 build.py` instead.
